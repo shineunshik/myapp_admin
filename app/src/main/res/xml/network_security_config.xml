@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!--        <domain includeSubdomains="true">api.kr.co.doctorlink</domain>-->
+        <!--        <domain includeSubdomains="true">webview.bootpay.co.kr</domain>-->
+        <domain includeSubdomains="true">apis.data.go.kr</domain>
+        <domain includeSubdomains="true">eshare.go.kr</domain>
+        <domain includeSubdomains="true">api.childcare.go.kr</domain>
+        <domain includeSubdomains="true">open.neis.go.kr</domain>
+        <domain includeSubdomains="true">openapi.seoul.go.kr</domain>
+        <domain includeSubdomains="true">data.ex.co.kr</domain>
+        <domain includeSubdomains="true">bigdata.kepco.co.kr</domain>
+        <domain includeSubdomains="true">naveropenapi.apigw.ntruss.com</domain>
+        <domain includeSubdomains="true">ws.baroservice.com</domain>
+        <domain includeSubdomains="true">testws.baroservice.com</domain>
+        <domain includeSubdomains="true">webview.bootpay.co.kr</domain>
+
+        <!--        <domain includeSubdomains="true">example.com</domain>-->
+        <!--        <domain includeSubdomains="true">beingtech.livekit.cloud</domain>-->
+        <!--        <domain includeSubdomains="true">icl.jfrog.io/artifactory/kakaoenterprise</domain>-->
+    </domain-config>
+
+    <!--    <base-config cleartextTrafficPermitted="true">-->
+    <!--        <trust-anchors>-->
+    <!--            <certificates src="system" />-->
+    <!--        </trust-anchors>-->
+    <!--    </base-config>-->
+
+</network-security-config>
