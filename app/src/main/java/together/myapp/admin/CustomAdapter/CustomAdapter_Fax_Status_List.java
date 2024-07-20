@@ -1,34 +1,40 @@
 package together.myapp.admin.CustomAdapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.common.net.MediaType;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import together.myapp.admin.Object.Ob_Fax_Status;
 import together.myapp.admin.R;
 import together.myapp.admin.soap.FaxResponseStatusSearch;
+import together.myapp.admin.BootPayAPI.Bootpay;
 
 public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAdapter_Fax_Status_List.CustomViewHolder> {
 
@@ -38,6 +44,8 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
     String certKey = "D8AEAC73-ED16-43C8-89D3-322DC58C11F9";
     //  String certKey = "FF73D08B-C795-484E-85A6-56CEF1962E86";
     String corpNum = "2153401358";
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference_paymentList_admin;
 
     public CustomAdapter_Fax_Status_List(ArrayList<Ob_Fax_Status> arrayList, Context context) {
         this.arrayList = arrayList;
@@ -195,6 +203,98 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
             pay_request.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    int position = getLayoutPosition();
+
+                    if (!arrayList.get(position).getPayment_Status().equals("o")){
+
+                        System.out.println("requestSubscribe false2: ");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    firebaseDatabase = FirebaseDatabase.getInstance();
+                                    databaseReference_paymentList_admin = firebaseDatabase.getReference().child("oojung_fax_admin").child(arrayList.get(position).getSendKey());
+
+                                    Bootpay bootpay = new Bootpay("64d8e2b600c78a001a677629","Rq38exiXmXLqr9n2Rk9myST+E5ztfsIM4CAFfN27p+s=");
+                                    bootpay.getAccessToken();
+
+                                    StringBuilder urlBuilder = new StringBuilder("https://api.bootpay.co.kr/v2/subscribe/payment"); /*URL*/
+                                    URL url = new URL(urlBuilder.toString());
+                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                    conn.setRequestMethod("POST");
+                                    conn.setRequestProperty("Content-Type", "application/json");
+                                    conn.setRequestProperty("Authorization", "Bearer " + bootpay.getAccessToken());
+                                    conn.setDoOutput(true); // 출력 스트림을 사용하여 요청 본문 작성 설정
+
+                                    JSONArray jsonArray = new JSONArray();
+                                    JSONObject postData = new JSONObject();
+                                    postData.put("billing_key", arrayList.get(position).getBilling_key());
+                                    postData.put("order_name", "팩스결제");
+                                    postData.put("price", Integer.parseInt(arrayList.get(position).getRequest_Money()));
+                                    postData.put("order_id", arrayList.get(position).getSendKey());
+                                    jsonArray.put(postData);
+
+                                    // 요청 본문에 데이터를 쓰기
+                                    try (OutputStream os = conn.getOutputStream()) {
+                                        byte[] input = postData.toString().getBytes("utf-8");
+                                        os.write(input, 0, input.length);
+                                    }
+                                    catch (Exception e){
+
+                                    }
+
+                                    BufferedReader rd;
+                                    if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                                        rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                                    } else {
+                                        rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                                    }
+                                    StringBuilder sb = new StringBuilder();
+                                    String line;
+                                    while ((line = rd.readLine()) != null) {
+                                        sb.append(line);
+                                    }
+                                    rd.close();
+                                    conn.disconnect();
+
+
+                                    System.out.println("requestSubscribe success: 토큰 FaxResponseStatusSearch" + sb.toString());
+
+
+
+                                    /** 여기서 현재 서버에서 실행되고있는 response 값을 추출해서 결제 상태를 파악하고
+                                     sqlite & firebase 관리자 및 결제 리스트에 업데이트 하기  **/
+
+                                    JSONObject jsonObject = new JSONObject(sb.toString());
+
+                                    //결제성공
+                                    if (!sb.toString().contains("error_code")){
+                                        databaseReference_paymentList_admin.child("payment_Status").setValue("o"); //관리자 확인용
+
+                                        String status = jsonObject.getString("status");
+                                        String status_locale = jsonObject.getString("status_locale");
+                                        System.out.println("requestSubscribe success: status" + status+"\n");
+                                        System.out.println("requestSubscribe success: status_locale" + status_locale);
+                                    }
+                                    //결제실패
+                                    else {
+                                        databaseReference_paymentList_admin.child("payment_Status").setValue("x");//관리자 확인용
+
+                                        System.out.println("requestSubscribe success: error_code" + jsonObject.getString("error_code")+"\n");
+                                    }
+
+
+
+                                }
+                                catch (Exception e){
+                                    System.out.println("requestSubscribe false2: " + e.toString());
+                                }
+                            }
+                        }).start();
+                    }
+                    else {
+                        Toast.makeText(context,"이미 결제가 완료되었습니다",Toast.LENGTH_SHORT).show();
+                    }
 
                 }
             });

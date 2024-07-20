@@ -17,6 +17,19 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+
+    }
+    
     buildTypes {
         release {
             minifyEnabled false
@@ -50,9 +63,26 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.1' // OkHttpClient
     implementation 'com.squareup.retrofit2:converter-gson:latest_version'
 
+    implementation 'org.jsoup:jsoup:1.14.3'
+
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.12.0'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+
+    //부트페이
+    implementation 'io.github.bootpay:android:4.3.5' //최신 버전 추천
+    // implementation 'io.github.bootpay:android:+' //최신 버전 추천
+    implementation 'io.github.bootpay:android-bio:4.2.4' //생체인증 결제 사용시 추가
+    // implementation 'io.github.bootpay:android-bio:+' //생체인증 결제 사용시 추가
+    implementation 'io.github.bootpay:backend:2.2.1'
+    implementation 'io.github.bootpay:backend:+'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '+'
+
+
+
 }
