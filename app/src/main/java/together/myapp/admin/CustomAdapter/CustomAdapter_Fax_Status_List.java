@@ -47,6 +47,8 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference_paymentList_admin;
 
+    int count =0;
+
     public CustomAdapter_Fax_Status_List(ArrayList<Ob_Fax_Status> arrayList, Context context) {
         this.arrayList = arrayList;
         this.context = context;
@@ -114,6 +116,8 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
         TextView pay_request;
         TextView status_request;
 
+        TextView delete;
+
 
         public CustomViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -130,6 +134,8 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
             this.SendKey = itemView.findViewById(R.id.SendKey);
             this.pay_request = itemView.findViewById(R.id.pay_request);
             this.status_request = itemView.findViewById(R.id.status_request);
+
+            this.delete = itemView.findViewById(R.id.delete);
             view = itemView;
 
             status_request.setOnClickListener(new View.OnClickListener() {
@@ -294,6 +300,27 @@ public class CustomAdapter_Fax_Status_List extends RecyclerView.Adapter<CustomAd
                     }
                     else {
                         Toast.makeText(context,"이미 결제가 완료되었습니다",Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            });
+
+
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    int position = getLayoutPosition();
+                    firebaseDatabase = FirebaseDatabase.getInstance();
+                    databaseReference_paymentList_admin = firebaseDatabase.getReference().child("oojung_fax_admin").child(arrayList.get(position).getSendKey());
+
+                    if (count%2==0){
+                        Toast.makeText(context,"삭제하려면 한번 더 눌러주세요.",Toast.LENGTH_SHORT).show();
+                        count++;
+                    }
+                    else if (count%2==1){
+                        databaseReference_paymentList_admin.removeValue();
+                        count++;
                     }
 
                 }
